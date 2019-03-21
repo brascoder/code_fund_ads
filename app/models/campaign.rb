@@ -78,12 +78,14 @@ class Campaign < ApplicationRecord
   scope :search_user, ->(value) { value.blank? ? all : where(user_id: User.advertisers.search_name(value).or(User.advertisers.search_company(value))) }
   scope :search_user_id, ->(value) { value.blank? ? all : where(user_id: value) }
   scope :search_weekdays_only, ->(value) { value.nil? ? all : where(weekdays_only: value) }
-  scope :without_assigned_property_ids, -> {
-    where(assigned_property_ids: nil).or(where(assigned_property_ids: "{}"))
-  }
+  scope :without_assigned_property_ids, -> { where assigned_property_ids: [] }
   scope :assigned_to_property_id, ->(property_id) {
-    where Arel::Nodes::InfixOperation.new("@>", arel_table[:assigned_property_ids], property_id)
+    value = Arel::Nodes::SqlLiteral.new(sanitize_sql_array(["ARRAY[?]", property_id]))
+    value_cast = Arel::Nodes::NamedFunction.new("CAST", [value.as("bigint[]")])
+    where Arel::Nodes::InfixOperation.new("@>", arel_table[:assigned_property_ids], value_cast)
   }
+  scope :assigned_premium_for_property_id, ->(property_id) { premium.assigned_to_property_id }
+  scope :assigned_fallback_for_property_id, ->(property_id) { fallback.assigned_to_property_id }
   scope :permitted_for_property_id, ->(property_id) {
     subquery = Property.select(:prohibited_advertiser_ids).where(id: property_id)
     id_prohibited = Arel::Nodes::InfixOperation.new("<@", Arel::Nodes::SqlLiteral.new("ARRAY[\"campaigns\".\"user_id\"]"), subquery.arel)
@@ -108,17 +110,17 @@ class Campaign < ApplicationRecord
     end
   end
   scope :fallback_for_property_id, ->(property_id) do
-    fallback.permitted_for_property_id(property_id)
+    fallback
+      .permitted_for_property_id(property_id)
       .where.not(fallback: Property.select(:prohibit_fallback_campaigns).where(id: property_id).limit(1))
   end
   scope :targeted_fallback_for_property_id, ->(property_id, *keywords) do
-    targeted_for_property_id(property_id, *keywords)
-      .where(fallback: true)
+    fallback
+      .targeted_for_property_id(property_id, *keywords)
       .where.not(fallback: Property.select(:prohibit_fallback_campaigns).where(id: property_id).limit(1))
   end
   scope :targeted_country_code, ->(country_code) { country_code ? with_all_country_codes(country_code) : without_country_codes }
   scope :targeted_province_code, ->(province_code) { province_code ? without_province_codes.or(with_all_province_codes(province_code)) : without_province_codes }
-  scope :assigned_to_property, ->(property) { permitted_for_property_id(property.id).with_all_assigned_property_ids(property.id) }
 
   # Scopes and helpers provied by tag_columns
   # SEE: https://github.com/hopsoft/tag_columns
