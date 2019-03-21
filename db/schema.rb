@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_11_172908) do
+ActiveRecord::Schema.define(version: 2019_03_21_180846) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
@@ -90,7 +90,9 @@ ActiveRecord::Schema.define(version: 2019_03_11_172908) do
     t.boolean "job_posting", default: false, null: false
     t.string "province_codes", default: [], array: true
     t.boolean "fixed_ecpm", default: true, null: false
+    t.bigint "assigned_property_ids", default: [], null: false, array: true
     t.index "lower((name)::text)", name: "index_campaigns_on_name"
+    t.index ["assigned_property_ids"], name: "index_campaigns_on_assigned_property_ids", using: :gin
     t.index ["core_hours_only"], name: "index_campaigns_on_core_hours_only"
     t.index ["country_codes"], name: "index_campaigns_on_country_codes", using: :gin
     t.index ["creative_id"], name: "index_campaigns_on_creative_id"
@@ -153,6 +155,7 @@ ActiveRecord::Schema.define(version: 2019_03_11_172908) do
     t.datetime "updated_at", null: false
     t.uuid "legacy_id"
     t.bigint "organization_id"
+    t.string "cta"
     t.index ["organization_id"], name: "index_creatives_on_organization_id"
     t.index ["user_id"], name: "index_creatives_on_user_id"
   end

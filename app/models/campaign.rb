@@ -29,6 +29,7 @@
 #  job_posting           :boolean          default(FALSE), not null
 #  province_codes        :string           default([]), is an Array
 #  fixed_ecpm            :boolean          default(TRUE), not null
+#  assigned_property_ids :bigint(8)        default([]), not null, is an Array
 #
 
 class Campaign < ApplicationRecord
@@ -77,6 +78,12 @@ class Campaign < ApplicationRecord
   scope :search_user, ->(value) { value.blank? ? all : where(user_id: User.advertisers.search_name(value).or(User.advertisers.search_company(value))) }
   scope :search_user_id, ->(value) { value.blank? ? all : where(user_id: value) }
   scope :search_weekdays_only, ->(value) { value.nil? ? all : where(weekdays_only: value) }
+  scope :without_assigned_property_ids, -> {
+    where(assigned_property_ids: nil).or(where(assigned_property_ids: "{}"))
+  }
+  scope :assigned_to_property_id, ->(property_id) {
+    where Arel::Nodes::InfixOperation.new("@>", arel_table[:assigned_property_ids], property_id)
+  }
   scope :permitted_for_property_id, ->(property_id) {
     subquery = Property.select(:prohibited_advertiser_ids).where(id: property_id)
     id_prohibited = Arel::Nodes::InfixOperation.new("<@", Arel::Nodes::SqlLiteral.new("ARRAY[\"campaigns\".\"user_id\"]"), subquery.arel)
@@ -86,13 +93,18 @@ class Campaign < ApplicationRecord
   scope :targeted_premium_for_property_id, ->(property_id, *keywords) { premium.targeted_for_property_id(property_id, *keywords) }
   scope :targeted_for_property_id, ->(property_id, *keywords) do
     if keywords.present?
-      permitted_for_property_id(property_id).with_any_keywords(*keywords).without_any_negative_keywords(*keywords)
+      permitted_for_property_id(property_id)
+        .with_any_keywords(*keywords)
+        .without_any_negative_keywords(*keywords)
+        .without_assigned_property_ids
     else
       subquery = Property.active.select(:keywords).where(id: property_id)
       keywords_overlap = Arel::Nodes::InfixOperation.new("&&", arel_table[:keywords], subquery.arel)
       negative_keywords_overlap = Arel::Nodes::InfixOperation.new("&&", arel_table[:negative_keywords], subquery.arel)
-      permitted_for_property_id(property_id).where(keywords_overlap).where.not(negative_keywords_overlap)
-      permitted_for_property_id(property_id).where(keywords_overlap)
+      permitted_for_property_id(property_id)
+        .where(keywords_overlap)
+        .where.not(negative_keywords_overlap)
+        .without_assigned_property_ids
     end
   end
   scope :fallback_for_property_id, ->(property_id) do
@@ -106,6 +118,7 @@ class Campaign < ApplicationRecord
   end
   scope :targeted_country_code, ->(country_code) { country_code ? with_all_country_codes(country_code) : without_country_codes }
   scope :targeted_province_code, ->(province_code) { province_code ? without_province_codes.or(with_all_province_codes(province_code)) : without_province_codes }
+  scope :assigned_to_property, ->(property) { permitted_for_property_id(property.id).with_all_assigned_property_ids(property.id) }
 
   # Scopes and helpers provied by tag_columns
   # SEE: https://github.com/hopsoft/tag_columns

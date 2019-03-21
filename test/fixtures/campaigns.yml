@@ -29,6 +29,7 @@
 #  job_posting           :boolean          default(FALSE), not null
 #  province_codes        :string           default([]), is an Array
 #  fixed_ecpm            :boolean          default(TRUE), not null
+#  assigned_property_ids :bigint(8)        default([]), not null, is an Array
 #
 
 # IMPORTANT: Limit campaigns fixtures to [1] using only the minimum required data
