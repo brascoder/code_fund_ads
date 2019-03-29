@@ -93,6 +93,7 @@ class JobPosting < ApplicationRecord
   scope :internal, -> { where source: ENUMS::JOB_SOURCES::INTERNAL }
   scope :remoteok, -> { where source: ENUMS::JOB_SOURCES::REMOTEOK }
   scope :github, -> { where source: ENUMS::JOB_SOURCES::GITHUB }
+  scope :talroo, -> { where source: ENUMS::JOB_SOURCES::TALROO }
   scope :search_company_name, ->(value) { value.blank? ? all : search_column(:company_name, value) }
   scope :search_country_codes, ->(*values) { values.blank? ? all : where(country_code: values) }
   scope :search_description, ->(value) { value.blank? ? all : search_column(:description, value) }
