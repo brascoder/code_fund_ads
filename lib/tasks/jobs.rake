@@ -12,4 +12,11 @@ namespace :jobs do
     ImportGithubJobsJob.new.perform(*tags)
     puts "There are #{JobPosting.count} jobs"
   end
+
+  desc "Import jobs from Talroo"
+  task import_talroo: :environment do
+    tags = ENUMS::KEYWORDS.values.flatten.uniq.sort
+    ImportTalrooJobsJob.new.perform(*tags)
+    puts "There are #{JobPosting.count} jobs"
+  end
 end
