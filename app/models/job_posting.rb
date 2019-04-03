@@ -135,6 +135,12 @@ class JobPosting < ApplicationRecord
 
   # public instance methods ...................................................
 
+  def to_param
+    return "tr-#{source_identifier}" if source == ENUMS::JOB_SOURCES::TALROO
+
+    id
+  end
+
   def paid?
     stripe_charge_id.present?
   end

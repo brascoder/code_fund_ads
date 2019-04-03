@@ -75,7 +75,7 @@ module JobFeedImporters
       province_code, country_code = parse_province(fragment.css('state').inner_text)
 
       job_params[:status] = 'active'
-      job_params[:source] = 'talroo'
+      job_params[:source] = ENUMS::JOB_SOURCES::TALROO
       job_params[:source_identifier] = fragment.css('referencenumber').inner_text
       job_params[:job_type] = parse_job_type(fragment.css('title').inner_text)
       job_params[:company_name] = fragment.css('company').inner_text
