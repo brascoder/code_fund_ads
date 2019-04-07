@@ -183,6 +183,7 @@ JOB_SOURCES:
   - remoteok
   - github
   - talroo
+  - zip_recruiter
 
 # SEE: https://dev.maxmind.com/geoip/legacy/codes/iso3166/
 COUNTRIES:

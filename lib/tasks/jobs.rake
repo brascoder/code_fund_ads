@@ -19,4 +19,11 @@ namespace :jobs do
     ImportTalrooJobsJob.new.perform(*tags)
     puts "There are #{JobPosting.count} jobs"
   end
+
+  desc "Import jobs from ZipRecruiter"
+  task import_zip_recruiter: :environment do
+    tags = ENUMS::KEYWORDS.values.flatten.uniq.sort
+    ImportZipRecruiterJobsJob.new.perform(*tags)
+    puts "There are #{JobPosting.count} jobs"
+  end
 end
