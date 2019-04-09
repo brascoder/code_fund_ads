@@ -1,6 +1,7 @@
 module JobFeedImporters
   class TalrooJobFeedImporter
-    URL     = ENV['TALROO_URL']
+    SOURCE       = ENUMS::JOB_SOURCES::TALROO
+    URL          = ENV['TALROO_URL']
     BUFFER_LIMIT = 50 * 1024 * 1024
     OPTIONS = {
       headers: {
@@ -16,6 +17,7 @@ module JobFeedImporters
 
     def initialize(*tags)
       @tags = tags.flatten
+      @tags = ENUMS::KEYWORDS.values.flatten.uniq.sort if @tags.empty?
     end
 
     def import
@@ -74,10 +76,11 @@ module JobFeedImporters
 
       job_params = {}
       province_code, country_code = parse_province(fragment.css('state').inner_text)
+      source_id = fragment.css('referencenumber').inner_text
 
       job_params[:status] = 'active'
-      job_params[:source] = ENUMS::JOB_SOURCES::TALROO
-      job_params[:source_identifier] = fragment.css('referencenumber').inner_text
+      job_params[:source] = SOURCE
+      job_params[:source_identifier] = source_id
       job_params[:job_type] = parse_job_type(fragment.css('title').inner_text)
       job_params[:company_name] = fragment.css('company').inner_text
       job_params[:title] = fragment.css('title').inner_text
@@ -96,6 +99,7 @@ module JobFeedImporters
       job_params[:start_date] = Chronic.parse(fragment.css('date').inner_text).to_date
       job_params[:end_date] = Date.today
       job_params[:auto_renew] = false
+      job_params[:slug] = "#{Digest::MD5.hexdigest(SOURCE)}-#{source_id}"
 
       job_params
     end
@@ -113,10 +117,9 @@ module JobFeedImporters
     end
 
     def parse_keywords(description)
-      keywords   = []
-      @tags.each { |tag| keywords << tag if description.include?(tag) }
-
-      keywords
+      @tags.reduce([]) do |keywords, tag|
+        tag.length > 2 && description.include?(tag) ? keywords << tag : keywords
+      end
     end
 
     def parse_province(state)

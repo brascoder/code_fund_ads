@@ -72,6 +72,7 @@ class JobPosting < ApplicationRecord
   validates :source_identifier, presence: true, if: -> { external? }
   validates :start_date, presence: true
   validates :end_date, presence: true
+  validates :slug, presence: true
 
   with_options if: :internal? do |job_posting|
     job_posting.validates :company_name, presence: true
@@ -137,9 +138,7 @@ class JobPosting < ApplicationRecord
   # public instance methods ...................................................
 
   def to_param
-    return "tr-#{source_identifier}" if source == ENUMS::JOB_SOURCES::TALROO
-
-    id
+    slug.present? ? slug : id
   end
 
   def paid?
