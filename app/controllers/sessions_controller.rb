@@ -3,7 +3,7 @@ class SessionsController < Devise::SessionsController
 
   def after_sign_in_path_for(user)
     if params[:job].present?
-      job_posting = JobPosting.find_by(id: params[:job], session_id: session.id)
+      job_posting = JobPosting.by_slug_or_id(params[:job]).where(session_id: session.id).first
       return new_job_posting_purchase_path(job_posting) if job_posting&.pending?
     end
     helpers.default_dashboard_path(user)

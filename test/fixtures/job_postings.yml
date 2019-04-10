@@ -43,6 +43,7 @@
 #  coupon_id                  :bigint(8)
 #  plan                       :string
 #  offers                     :string           default([]), not null, is an Array
+#  slug                       :string           not null
 #
 
 one:
@@ -63,3 +64,4 @@ one:
   end_date: <%= Date.today + 30.days %>
   company_email: "test@example.com"
   job_type: full_time
+  slug: <%= "#{Digest::MD5.hexdigest('internal')}-#{SecureRandom.uuid}" %>

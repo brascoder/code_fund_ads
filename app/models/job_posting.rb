@@ -43,6 +43,7 @@
 #  coupon_id                  :bigint(8)
 #  plan                       :string
 #  offers                     :string           default([]), not null, is an Array
+#  slug                       :string           not null
 #
 
 class JobPosting < ApplicationRecord
@@ -69,7 +70,7 @@ class JobPosting < ApplicationRecord
   validates :min_annual_salary_cents, presence: true
   validates :min_annual_salary_currency, presence: true
   validates :source, inclusion: {in: ENUMS::JOB_SOURCES.keys}
-  validates :source_identifier, presence: true, if: -> { external? }
+  validates :source_identifier, presence: true
   validates :start_date, presence: true
   validates :end_date, presence: true
   validates :slug, presence: true
@@ -88,6 +89,7 @@ class JobPosting < ApplicationRecord
   before_validation :set_currency
   before_validation :sanitize_plan
   before_validation :sanitize_offers
+  before_validation :set_slug
 
   # scopes ....................................................................
   scope :active, -> { where status: ENUMS::JOB_STATUSES::ACTIVE }
@@ -96,6 +98,8 @@ class JobPosting < ApplicationRecord
   scope :github, -> { where source: ENUMS::JOB_SOURCES::GITHUB }
   scope :talroo, -> { where source: ENUMS::JOB_SOURCES::TALROO }
   scope :zip_recruiter, -> { where source: ENUMS::JOB_SOURCES::ZIP_RECRUITER }
+  scope :by_slug, ->(value) { where slug: value }
+  scope :by_slug_or_id, ->(value) { by_slug(value).or(where(id: value)) }
   scope :search_company_name, ->(value) { value.blank? ? all : search_column(:company_name, value) }
   scope :search_country_codes, ->(*values) { values.blank? ? all : where(country_code: values) }
   scope :search_description, ->(value) { value.blank? ? all : search_column(:description, value) }
@@ -236,5 +240,10 @@ class JobPosting < ApplicationRecord
 
   def sanitize_offers
     self.offers = offers & ENUMS::JOB_OFFERS.keys
+  end
+
+  def set_slug
+    self.source_identifier ||= SecureRandom.uuid
+    self.slug ||= "#{Digest::MD5.hexdigest(source)}-#{source_identifier}"
   end
 end

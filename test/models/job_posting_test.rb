@@ -43,6 +43,7 @@
 #  coupon_id                  :bigint(8)
 #  plan                       :string
 #  offers                     :string           default([]), not null, is an Array
+#  slug                       :string           not null
 #
 
 require "test_helper"

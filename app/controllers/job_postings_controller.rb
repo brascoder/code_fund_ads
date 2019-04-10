@@ -79,7 +79,7 @@ class JobPostingsController < ApplicationController
   end
 
   def set_job_posting
-    @job_posting = JobPosting.find(params[:id])
+    @job_posting = JobPosting.by_slug_or_id(params[:id]).first
   end
 
   def job_posting_params

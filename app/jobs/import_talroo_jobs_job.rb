@@ -1,7 +1,7 @@
 class ImportTalrooJobsJob < ApplicationJob
-  queue_as :xml_feed
+  queue_as :job_posting
 
   def perform(*tags)
-    JobFeedImporters::TalrooJobFeedImport.start(*tags)
+    JobFeedImporters::TalrooJobFeedImporter.start(*tags)
   end
 end

@@ -1,7 +1,7 @@
 class ImportZipRecruiterJobsJob < ApplicationJob
-  queue_as :xml_feed
+  queue_as :job_posting
 
   def perform(*tags)
-    JobFeedImporters::ZipRecruiterJobFeedImport.start(*tags)
+    JobFeedImporters::ZipRecruiterJobFeedImporter.start(*tags)
   end
 end

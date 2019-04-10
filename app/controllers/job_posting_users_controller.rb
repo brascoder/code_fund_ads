@@ -25,7 +25,7 @@ class JobPostingUsersController < ApplicationController
   private
 
   def set_job_posting
-    @job_posting = JobPosting.find(params[:job_posting_id])
+    @job_posting = JobPosting.by_slug_or_id(params[:job_posting_id]).first
   end
 
   def user_params
