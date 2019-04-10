@@ -37,8 +37,9 @@ module JobFeedImporters
         end
       end
       req.run
-      ids = JobPosting.zip_recruiter.pluck(:id)
-      EnsureJobPostingsFullTextSearchJob.perform_later(ids)
+      JobPosting.zip_recruiter.pluck(:id).each_slice(1000) do |slice|
+        EnsureJobPostingsFullTextSearchJob.perform_later(slice)
+      end
     end
 
     private

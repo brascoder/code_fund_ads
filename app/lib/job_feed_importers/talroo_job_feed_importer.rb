@@ -34,8 +34,9 @@ module JobFeedImporters
         end
       end
       req.run
-      ids = JobPosting.talroo.pluck(:id)
-      EnsureJobPostingsFullTextSearchJob.perform_later(ids)
+      JobPosting.talroo.pluck(:id).each_slice(1000) do |slice|
+        EnsureJobPostingsFullTextSearchJob.perform_later(slice)
+      end
     end
 
     private
