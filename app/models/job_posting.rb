@@ -73,7 +73,7 @@ class JobPosting < ApplicationRecord
   validates :source_identifier, presence: true
   validates :start_date, presence: true
   validates :end_date, presence: true
-  validates :slug, presence: true
+  validates :slug, uniqueness: true, allow_nil: true
 
   with_options if: :internal? do |job_posting|
     job_posting.validates :company_name, presence: true
