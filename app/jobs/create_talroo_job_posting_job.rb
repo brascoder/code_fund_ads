@@ -1,5 +1,6 @@
-class CreateTalrooJobPostingJob < ApplicationJob
-  queue_as :job_posting
+class CreateTalrooJobPostingJob
+  include Sidekiq::Worker
+  sidekiq_options queue: 'job_posting'
 
   SOURCE = ENUMS::JOB_SOURCES::TALROO
 

@@ -50,7 +50,7 @@ namespace :schedule do
     DESC
     task import_talroo: :environment do
       tags = ENUMS::KEYWORDS.values.flatten.uniq.sort
-      ImportTalrooJobsJob.new.perform_later(*tags)
+      ImportTalrooJobsJob.perform_later(*tags)
       puts "There are #{JobPosting.count} jobs"
     end
 
@@ -60,7 +60,7 @@ namespace :schedule do
     DESC
     task import_zip_recruiter: :environment do
       tags = ENUMS::KEYWORDS.values.flatten.uniq.sort
-      ImportZipRecruiterJobsJob.new.perform_later(*tags)
+      ImportZipRecruiterJobsJob.perform_later(*tags)
       puts "There are #{JobPosting.count} jobs"
     end
   end

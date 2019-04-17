@@ -8,10 +8,9 @@ class ImportZipRecruiterJobsJob < ApplicationJob
     open URL do |file|
       reader = Zlib::GzipReader.new(file)
       Nokogiri::XML::Reader(reader).each do |node|
-        next unless node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
-        next unless node.name == 'job'
-
-        CreateZipRecruiterJobPostingJob.perform_later node.outer_xml, tags
+        if node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT && node.name == 'job'
+          CreateZipRecruiterJobPostingJob.perform_async node.outer_xml, tags
+        end
       end
     end
   end

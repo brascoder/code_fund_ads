@@ -1,5 +1,6 @@
-class CreateZipRecruiterJobPostingJob < ApplicationJob
-  queue_as :job_posting
+class CreateZipRecruiterJobPostingJob
+  include Sidekiq::Worker
+  sidekiq_options queue: 'job_posting'
 
   SOURCE = ENUMS::JOB_SOURCES::ZIP_RECRUITER
 

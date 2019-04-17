@@ -7,10 +7,9 @@ class ImportTalrooJobsJob < ApplicationJob
     JobPosting.talroo.delete_all
     open URL do |file|
       Nokogiri::XML::Reader(file).each do |node|
-        next unless node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
-        next unless node.name == 'job'
-
-        CreateTalrooJobPostingJob.perform_later node.outer_xml, tags
+        if node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT && node.name == 'job'
+          CreateTalrooJobPostingJob.perform_async node.outer_xml, tags
+        end
       end
     end
   end
